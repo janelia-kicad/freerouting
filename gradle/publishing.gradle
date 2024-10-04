@@ -2,31 +2,24 @@
 // Collect publishing information
 // -----------------------------------------------------------------------------
 ext.publishing = [:]
-ext.publishing.bintray = [:]
 
-ext.publishing.pomName =  ext.publishing.artifactId
-
-apply from: "gradle/project-info.gradle"
+apply from: 'gradle/project-info.gradle'
 
 // -----------------------------------------------------------------------------
 // Performs publishing
 // -----------------------------------------------------------------------------
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 // create one jar for the source files
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+tasks.register('sourcesJar', Jar) {
+    dependsOn classes
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
-}
-
-Date buildTimeAndDate = new Date()
-ext {
-    buildDate = new java.text.SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
-    buildTime = new java.text.SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
 }
 
 
@@ -64,6 +57,14 @@ def pomConfig = {
     }
 }
 
+tasks.register('verifyVersion') {
+    doLast {
+        if (version.toString().toUpperCase().contains("SNAPSHOT")) {
+            throw new GradleException("Can't publish a SNAPSHOT version to Maven Central.")
+        }
+    }
+}
+
 publishing {
     publications {
         mavenCustom(MavenPublication) {
@@ -84,30 +85,19 @@ publishing {
             }
         }
     }
-}
+    repositories {
+        maven {
+            name = 'OSSRH'
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
 
-if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = ''
-if (!project.hasProperty('bintrayApiKey')) ext.bintrayApiKey = ''
-
-bintray {
-    user = project.bintrayUsername
-    key = project.bintrayApiKey
-    publications = ['mavenCustom']
-    pkg {
-        repo                  = publishing.bintray.repo
-        userOrg               = publishing.bintray.userOrg
-        name                  = publishing.bintray.name
-        desc                  = publishing.desc
-        licenses              = [publishing.license]
-        labels                = publishing.labels
-        websiteUrl            = publishing.websiteUrl
-        issueTrackerUrl       = publishing.issueTrackerUrl
-        vcsUrl                = publishing.vcsUrl
-        publicDownloadNumbers = true
-        
-        version {
-            name              = publishing.versionId
-            vcsTag            = 'v' + publishing.versionId
+            credentials {
+                username = project.findProperty("sonatypeUsername") ?: System.getenv("SONATYPE_USERNAME")
+                password = project.findProperty("sonatypePassword") ?: System.getenv("SONATYPE_PASSWORD")
+            }
         }
     }
+}
+
+tasks.named("publish").configure {
+    dependsOn verifyVersion
 }

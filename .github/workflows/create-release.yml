@@ -15,13 +15,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: joschi/setup-jdk@v2 
+    - name: Set up JDK
+      uses: actions/setup-java@v3 
       with:
-          java-version: '11'
-          architecture: 'x64'
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
     - name: Build with Gradle
-      run: .\gradlew.bat dist 
+      run: .\gradlew.bat dist --no-daemon
     - name: Get Tag name 
       uses: olegtarasov/get-tag@v2.1
       id: tagName
@@ -33,7 +34,7 @@ jobs:
     - uses: AButler/upload-release-assets@v2.0
       with:
           files: './distribution/freerouting-${{ steps.tagName.outputs.tag }}.jar'
-          release-tag: ${{ steps.tagName.outputs.tag }}
+          release-tag: v${{ steps.tagName.outputs.tag }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}      
 
   build-ubuntu-x64:
@@ -42,15 +43,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: joschi/setup-jdk@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v3 
       with:
-          java-version: '11'
-          architecture: 'x64'
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew dist  
+      run: ./gradlew dist
     - name: Get Tag name 
       uses: olegtarasov/get-tag@v2.1    
       id: tagName
@@ -58,7 +60,7 @@ jobs:
           tagRegex: "v(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
           tagRegexGroup: 1   # Optional. Default is 1.
     - name: Create Distribution   
-      run: distribution/create-distribution-linux.sh ${{ steps.tagName.outputs.tag }}
+      run: distribution/create-distribution-linux-x64.sh ${{ steps.tagName.outputs.tag }}
     - uses: AButler/upload-release-assets@v2.0
       with:
           files: './distribution/freerouting-${{ steps.tagName.outputs.tag }}-linux-x64.zip'
@@ -71,13 +73,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: joschi/setup-jdk@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v3 
       with:
-          java-version: '11'
-          architecture: 'x64'
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
     - name: Build with Gradle
-      run: .\gradlew.bat dist 
+      run: .\gradlew.bat dist --no-daemon
     - name: Get Tag name 
       uses: olegtarasov/get-tag@v2.1
       id: tagName
@@ -87,7 +90,7 @@ jobs:
 #    - name: Set App Version
 #      run: $env:APP_VERSION=${{ steps.tagName.outputs.tag }}
     - name: Create Distribution   
-      run: distribution\create-distribution-windows.bat ${{ steps.tagName.outputs.tag }}   
+      run: distribution\create-distribution-windows-x64.bat ${{ steps.tagName.outputs.tag }}   
     - uses: AButler/upload-release-assets@v2.0
       with:
           files: './distribution/freerouting-${{ steps.tagName.outputs.tag }}-windows-x64.msi'
@@ -100,15 +103,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 11
-      uses: joschi/setup-jdk@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v3 
       with:
-          java-version: '11'
-          architecture: 'x64'
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          cache: 'gradle'
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew dist 
+      run: ./gradlew dist
     - name: Get Tag name 
       uses: olegtarasov/get-tag@v2.1
       id: tagName
@@ -116,7 +120,7 @@ jobs:
           tagRegex: "v(.*)"  # Optional. Returns specified group text as tag name. Full tag string is returned if regex is not defined.
           tagRegexGroup: 1   # Optional. Default is 1.     
     - name: Create Distribution   
-      run: distribution/create-distribution-macos.sh ${{ steps.tagName.outputs.tag }}   
+      run: distribution/create-distribution-macos-x64.sh ${{ steps.tagName.outputs.tag }}   
     - uses: AButler/upload-release-assets@v2.0
       with:
           files: './distribution/freerouting-${{ steps.tagName.outputs.tag }}-macos-x64.dmg'

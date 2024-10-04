@@ -18,3 +18,12 @@ bin/
 
 /tests/*.ses
 /tests/*.bin
+
+.jdk
+
+# Visual Studio 2015/2017 cache/options directory
+/.vs/
+
+freerouting.dsn
+temp-freerouting.dsn
+freerouting.ses
